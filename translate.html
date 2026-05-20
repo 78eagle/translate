@@ -231,8 +231,8 @@
 <div id="log">
   <div class="empty" id="empty">
     <div class="big">🎙️</div>
-    <p>Üstten dili seç, <b>mikrofon tuşuna bir kez bas</b>,<br>
-    konuş, bitince <b>tekrar bas</b> — çevirir.</p>
+    <p>Üstten dili seç, mikrofona <b>parmağını basılı tut</b>,<br>
+    konuş, <b>bırakınca</b> çevirir.</p>
   </div>
 </div>
 
@@ -242,7 +242,7 @@
   </button>
   <div class="status" id="status">
     <div class="state"><span class="dot"></span>Hazır</div>
-    <div class="hint">Mikrofona bir kez dokun ve konuş</div>
+    <div class="hint">Mikrofona basılı tut ve konuş</div>
   </div>
 </footer>
 
@@ -594,34 +594,32 @@ let collected=''; // dinleme süresince biriken final metin
 
 function makeRec(){
   const r=new SR();
-  r.continuous=true; r.interimResults=true;
-  /* Tanıma motoru tek dil; TR'yi ana al, diğer dili de oldukça iyi yakalar.
-     İstenirse tam ters de denenebilir. */
+  /* BASILI-TUT MODU:
+     - continuous KAPALI: tarayıcı tek sonuç döner, tekrar hatası olmaz
+     - interimResults AÇIK: konuşurken yazı canlı görünür
+     - Sonucu r.stop() çağırınca toparlar ve onend tetiklenir
+  */
+  r.continuous=false;
+  r.interimResults=true;
   r.lang=TR.sr;
+
+  let finalText=''; // tek sonuç burada birikir
+
   r.onstart=()=>{
+    finalText='';
     mic.classList.add('on');
-    setStatus('Dinleniyor','Bitince mikrofona tekrar dokun',true);
+    setStatus('Dinleniyor','Bitince parmağını kaldır',true);
   };
-  /* Final sonuçları indeks bazlı topla — tekrar gelirse üzerine yazılır,
-     birden fazla eklenmez. Bu, "aynı cümle 2-3 kez tekrarlandı" hatasını çözer. */
-  let finals=[]; // her bir final result'ın metni
   r.onresult=e=>{
     let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
+    for(let i=0;i<e.results.length;i++){
       const res=e.results[i];
-      if(res.isFinal){
-        // i'inci sonucu doğrudan ata — tekrar gelirse üstüne yazar, eklemez
-        finals[i] = res[0].transcript.trim();
-      } else {
-        interim += res[0].transcript;
-      }
+      if(res.isFinal) finalText = res[0].transcript.trim();
+      else interim += res[0].transcript;
     }
-    collected = finals.filter(Boolean).join(' ').trim();
-    const display = collected + (interim ? (collected?' ':'')+interim : '');
+    const display = finalText || interim;
     if(display) showInterim(display);
   };
-  // bu makeRec çağrısı için temizle
-  finals.length=0;
   r.onerror=e=>{
     if(e.error==='not-allowed' || e.error==='service-not-allowed'){
       wantOn=false; mic.classList.remove('on');
@@ -633,27 +631,23 @@ function makeRec(){
       showPerm();
     } else if(e.error==='network'){
       showError('Ağ hatası — konuşma tanıma için internet gerekli.');
+    } else if(e.error==='no-speech' || e.error==='aborted'){
+      /* sessizlik / parmak çekildi — onend halleder */
     }
   };
   r.onend=()=>{
-    // dinleme sonlandı → birikmişi çevir
     mic.classList.remove('on');
     clearInterim();
-    if(wantOn){
-      // beklenmedik bitiş — devam ettir, ama finals'ı sıfırla ki indeksler karışmasın
-      finals.length=0;
-      try{ r.start(); }catch(e){}
-      return;
-    }
-    if(collected.trim()){
-      const text=collected.trim();
-      collected='';
+    wantOn=false;
+    const text = finalText.trim();
+    finalText='';
+    if(text){
       setStatus('Çevriliyor…','',false);
       handleFinal(text).finally(()=>{
-        setStatus('Hazır','Mikrofona bir kez dokun ve konuş',false);
+        setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
       });
     }else{
-      setStatus('Hazır','Mikrofona bir kez dokun ve konuş',false);
+      setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
     }
   };
   return r;
@@ -661,20 +655,40 @@ function makeRec(){
 function startRec(){
   if(!SR){ showError('Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome kullan.'); return; }
   if(!L(cfg.current)){ showError('Önce ayarlardan bir dil ekle.'); return; }
-  collected='';
+  if(wantOn) return; // zaten dinliyor
   wantOn=true;
   rec=makeRec();
-  try{ rec.start(); }catch(e){}
+  try{ rec.start(); }catch(e){ wantOn=false; }
 }
 function stopRec(){
+  if(!wantOn) return;
   wantOn=false;
   if(rec){ try{ rec.stop(); }catch(e){} }
 }
 
-mic.addEventListener('click',()=>{
-  if(wantOn) stopRec();
-  else startRec();
-});
+/* ====== BASILI-TUT KONTROL ======
+   - touchstart / mousedown: dinlemeye başla
+   - touchend / mouseup / mouseleave: durdur, çevir
+*/
+function onPress(e){
+  if(e && e.cancelable) e.preventDefault();
+  startRec();
+}
+function onRelease(e){
+  if(e && e.cancelable) e.preventDefault();
+  stopRec();
+}
+
+/* dokunmatik (telefon) — passive false, çünkü preventDefault çağırıyoruz */
+mic.addEventListener('touchstart', onPress,   {passive:false});
+mic.addEventListener('touchend',   onRelease, {passive:false});
+mic.addEventListener('touchcancel',onRelease, {passive:false});
+/* fare (PC test için) */
+mic.addEventListener('mousedown',  onPress);
+mic.addEventListener('mouseup',    onRelease);
+mic.addEventListener('mouseleave', onRelease);
+/* tıklama davranışını engelle (touchstart sonrası 300ms tıklama gelmesin) */
+mic.addEventListener('click', e=>e.preventDefault());
 
 /* ===================== MİKROFON İZNİ ===================== */
 const permWrap=document.getElementById('permWrap');
@@ -702,7 +716,7 @@ async function requestMic(){
     permBtn.disabled=false;
     permBtn.textContent='🎤 Mikrofona İzin Ver';
     hidePerm();
-    setStatus('Hazır','Mikrofona bir kez dokun ve konuş',false);
+    setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
   }catch(e){
     permBtn.disabled=false;
     permBtn.textContent='🎤 Tekrar Dene';
@@ -720,7 +734,7 @@ permSkip.addEventListener('click',()=>{
 /* ===================== AÇILIŞ ===================== */
 renderLangBar();
 window.addEventListener('load', async ()=>{
-  setStatus('Hazır','Mikrofona bir kez dokun ve konuş',false);
+  setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
   const state=await checkPermission();
   if(state==='granted') hidePerm();
   else showPerm();
