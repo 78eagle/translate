@@ -602,16 +602,26 @@ function makeRec(){
     mic.classList.add('on');
     setStatus('Dinleniyor','Bitince mikrofona tekrar dokun',true);
   };
+  /* Final sonuçları indeks bazlı topla — tekrar gelirse üzerine yazılır,
+     birden fazla eklenmez. Bu, "aynı cümle 2-3 kez tekrarlandı" hatasını çözer. */
+  let finals=[]; // her bir final result'ın metni
   r.onresult=e=>{
     let interim='';
     for(let i=e.resultIndex;i<e.results.length;i++){
       const res=e.results[i];
-      if(res.isFinal) collected += (collected?' ':'') + res[0].transcript.trim();
-      else interim += res[0].transcript;
+      if(res.isFinal){
+        // i'inci sonucu doğrudan ata — tekrar gelirse üstüne yazar, eklemez
+        finals[i] = res[0].transcript.trim();
+      } else {
+        interim += res[0].transcript;
+      }
     }
+    collected = finals.filter(Boolean).join(' ').trim();
     const display = collected + (interim ? (collected?' ':'')+interim : '');
     if(display) showInterim(display);
   };
+  // bu makeRec çağrısı için temizle
+  finals.length=0;
   r.onerror=e=>{
     if(e.error==='not-allowed' || e.error==='service-not-allowed'){
       wantOn=false; mic.classList.remove('on');
@@ -630,7 +640,8 @@ function makeRec(){
     mic.classList.remove('on');
     clearInterim();
     if(wantOn){
-      // beklenmedik bitiş — devam ettir
+      // beklenmedik bitiş — devam ettir, ama finals'ı sıfırla ki indeksler karışmasın
+      finals.length=0;
       try{ r.start(); }catch(e){}
       return;
     }
