@@ -22,6 +22,7 @@
     color:var(--txt); font-family:'Fraunces',Georgia,serif;
     display:flex; flex-direction:column; overflow:hidden; height:100dvh;
   }
+
   header{
     padding:13px 18px 11px; border-bottom:1px solid var(--line);
     display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
@@ -39,71 +40,79 @@
   }
   .gear:active{ transform:scale(.92); }
 
-  /* Dil seçici çubuk */
-  .langbar{
-    flex-shrink:0; padding:10px 12px; border-bottom:1px solid var(--line);
-    display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
-    background:#13100e;
+  /* Dil ızgarası: 2 sütun, satırlar aşağı uzar */
+  .langgrid{
+    flex-shrink:0; padding:10px 14px;
+    border-bottom:1px solid var(--line); background:#13100e;
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
   }
-  .langbar::-webkit-scrollbar{ display:none; }
   .langbtn{
-    flex-shrink:0; padding:9px 16px; border-radius:10px; cursor:pointer;
+    padding:11px 14px; border-radius:10px; cursor:pointer;
     background:transparent; border:1px solid var(--line); color:var(--dim);
     font-family:'Sometype Mono',monospace; font-size:13px; font-weight:500;
     letter-spacing:.5px; transition:.15s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    min-height:42px;
   }
-  .langbtn:active{ transform:scale(.94); }
+  .langbtn:active{ transform:scale(.97); }
   .langbtn.active{
     background:var(--a); color:#1a1207; border-color:var(--a);
-    box-shadow:0 4px 12px rgba(231,198,151,.25);
+    box-shadow:0 4px 12px rgba(231,198,151,.2);
   }
   .langbtn .code{ font-weight:700; }
-  .langbtn .name{ font-size:11px; opacity:.7; margin-left:5px; }
+  .langbtn .name{ font-size:11px; opacity:.75; }
+  .langempty{
+    grid-column:1/-1; text-align:center; color:var(--dim);
+    font-family:'Sometype Mono',monospace; font-size:12px; padding:8px 4px;
+  }
 
-  #log{ flex:1; overflow-y:auto; padding:18px 14px 10px; display:flex; flex-direction:column; gap:12px; }
+  /* Sohbet alanı */
+  #log{ flex:1; overflow-y:auto; padding:16px 14px 10px; display:flex; flex-direction:column; gap:11px; min-height:0; }
   #log::-webkit-scrollbar{ width:0; }
-  .empty{ margin:auto; text-align:center; color:var(--dim); max-width:300px; padding:20px; }
-  .empty .big{ font-size:46px; margin-bottom:14px; }
-  .empty p{ font-size:15px; line-height:1.65; }
+  .empty{ margin:auto; text-align:center; color:var(--dim); max-width:300px; padding:14px; }
+  .empty .big{ font-size:42px; margin-bottom:12px; }
+  .empty p{ font-size:14px; line-height:1.6; }
   .empty p b{ color:var(--txt); }
 
-  .bubble{ max-width:90%; padding:13px 16px; border-radius:16px; animation:pop .25s ease; }
+  .bubble{ max-width:90%; padding:12px 15px; border-radius:15px; animation:pop .25s ease; }
   @keyframes pop{ from{opacity:0; transform:translateY(8px) scale(.98);} }
   .bubble.A{ align-self:flex-start; background:linear-gradient(135deg,#2a1f12,#1f1810); border:1px solid #4a3a22; border-bottom-left-radius:5px; }
   .bubble.B{ align-self:flex-end;   background:linear-gradient(135deg,#13212b,#101a22); border:1px solid #2c4658; border-bottom-right-radius:5px; }
   .tag{
     font-family:'Sometype Mono',monospace; font-size:10px; letter-spacing:2px;
-    text-transform:uppercase; margin-bottom:7px; display:flex; align-items:center; gap:6px;
+    text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px;
   }
   .bubble.A .tag{ color:var(--a); } .bubble.B .tag{ color:var(--b); }
-  .src{ font-size:14px; line-height:1.4; opacity:.55; }
-  .arr{ width:13px; height:1px; background:currentColor; opacity:.35; margin:8px 0; position:relative; }
+  .src{ font-size:13.5px; line-height:1.4; opacity:.55; }
+  .arr{ width:13px; height:1px; background:currentColor; opacity:.35; margin:7px 0; position:relative; }
   .arr::after{ content:''; position:absolute; right:-1px; top:-2px; border:3px solid transparent; border-left-color:currentColor; }
-  .out{ font-size:21px; line-height:1.45; font-weight:600; }
+  .out{ font-size:19px; line-height:1.4; font-weight:600; }
   .interim{ opacity:.5; font-style:italic; }
 
-  .acts{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .acts{ display:flex; gap:7px; margin-top:11px; flex-wrap:wrap; }
   .act{
     display:flex; align-items:center; gap:6px;
     background:rgba(255,255,255,.06); border:1px solid var(--line);
-    color:var(--txt); padding:8px 13px; border-radius:9px; cursor:pointer;
-    font-family:'Sometype Mono',monospace; font-size:12px; letter-spacing:.5px;
+    color:var(--txt); padding:7px 12px; border-radius:9px; cursor:pointer;
+    font-family:'Sometype Mono',monospace; font-size:11px; letter-spacing:.5px;
   }
   .act:active{ transform:scale(.95); background:rgba(255,255,255,.12); }
-  .act svg{ width:15px; height:15px; fill:currentColor; }
+  .act svg{ width:14px; height:14px; fill:currentColor; }
   .act.done{ border-color:var(--ok); color:var(--ok); }
 
-  footer{
-    flex-shrink:0; padding:14px 22px calc(20px + env(safe-area-inset-bottom));
+  /* Kontrol bölgesi: mikrofon + yazı + durum */
+  .controls{
+    flex-shrink:0; padding:16px 18px calc(18px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line); background:var(--card);
-    display:flex; align-items:center; gap:16px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
   }
   #mic{
-    width:78px; height:78px; border-radius:50%; flex-shrink:0; border:1px solid var(--line);
-    cursor:pointer; position:relative; background:linear-gradient(145deg,#2a2521,#171411);
-    display:flex; align-items:center; justify-content:center; transition:transform .15s,box-shadow .3s;
+    width:82px; height:82px; border-radius:50%; border:1px solid var(--line);
+    cursor:pointer; background:linear-gradient(145deg,#2a2521,#171411);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s,box-shadow .3s;
   }
-  #mic svg{ width:30px; height:30px; fill:var(--txt); transition:fill .2s; }
+  #mic svg{ width:32px; height:32px; fill:var(--txt); transition:fill .2s; }
   #mic:active{ transform:scale(.94); }
   #mic.on{
     background:linear-gradient(145deg,#e8654a,#c44023); border-color:#ff8a6e;
@@ -111,19 +120,43 @@
   }
   #mic.on svg{ fill:#fff; }
   @keyframes pulse{ 70%{box-shadow:0 0 0 22px rgba(232,101,74,0);} 100%{box-shadow:0 0 0 0 rgba(232,101,74,0);} }
-  .status{ flex:1; }
-  .status .state{ font-size:17px; font-weight:600; }
-  .status .hint{ font-family:'Sometype Mono',monospace; font-size:11px; color:var(--dim); margin-top:3px; }
-  .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--dim); margin-right:7px; vertical-align:1px; }
+
+  .writebox{
+    width:100%; display:flex; gap:8px; align-items:stretch;
+  }
+  #writeInput{
+    flex:1; padding:11px 14px; background:#0c0a09; border:1px solid var(--line);
+    border-radius:11px; color:var(--txt); font-family:'Fraunces',Georgia,serif;
+    font-size:15px; outline:none; resize:none; min-height:44px; max-height:120px;
+    line-height:1.4;
+  }
+  #writeInput:focus{ border-color:var(--a); }
+  #writeInput::placeholder{ color:var(--dim); font-style:italic; }
+  #writeBtn{
+    flex-shrink:0; padding:0 18px; border:none; border-radius:11px; cursor:pointer;
+    background:var(--a); color:#1a1207; font-family:'Fraunces',serif;
+    font-size:14px; font-weight:700; letter-spacing:.3px;
+    min-width:72px;
+  }
+  #writeBtn:active{ transform:scale(.95); }
+  #writeBtn:disabled{ opacity:.45; cursor:default; }
+
+  .status{
+    text-align:center; min-height:18px;
+  }
+  .status .state{ font-size:14px; font-weight:600; display:inline-flex; align-items:center; }
+  .status .hint{ font-family:'Sometype Mono',monospace; font-size:10px; color:var(--dim); margin-top:2px; letter-spacing:.5px; }
+  .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--dim); margin-right:6px; }
   .on .dot{ background:var(--live); animation:blink 1s infinite; }
   @keyframes blink{ 50%{opacity:.25;} }
 
   .err{
-    background:#3a1512; border:1px solid #6b261d; color:#ffb3a5; padding:12px 16px;
-    border-radius:12px; font-size:14px; font-family:'Sometype Mono',monospace;
+    background:#3a1512; border:1px solid #6b261d; color:#ffb3a5; padding:11px 15px;
+    border-radius:11px; font-size:13px; font-family:'Sometype Mono',monospace;
     line-height:1.5; align-self:center; max-width:92%; text-align:center;
   }
 
+  /* Ayar paneli */
   .overlay{
     position:fixed; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(4px);
     display:none; align-items:center; justify-content:center; padding:22px; z-index:50;
@@ -171,14 +204,14 @@
   .btn:active{ transform:scale(.97); }
 
   .toast{
-    position:fixed; bottom:130px; left:50%; transform:translateX(-50%) translateY(20px);
+    position:fixed; bottom:180px; left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--ok); color:#06140c; padding:12px 22px; border-radius:30px;
     font-family:'Sometype Mono',monospace; font-size:13px; font-weight:500;
     opacity:0; pointer-events:none; transition:.3s; z-index:60; white-space:nowrap;
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-  /* ---- mikrofon izin ekranı ---- */
+  /* Mikrofon izin ekranı */
   .permwrap{
     position:fixed; inset:0; z-index:100;
     background:radial-gradient(ellipse at top,#1a1410 0%,var(--bg) 70%);
@@ -225,32 +258,41 @@
   <button class="gear" id="gear" title="Ayarlar">⚙</button>
 </header>
 
-<!-- Dil seçici çubuk -->
-<div class="langbar" id="langbar"></div>
+<!-- Dil ızgarası (2 sütun, satırlar aşağı uzar) -->
+<div class="langgrid" id="langgrid"></div>
 
+<!-- Sohbet -->
 <div id="log">
   <div class="empty" id="empty">
     <div class="big">🎙️</div>
-    <p>Üstten dili seç, mikrofona <b>parmağını basılı tut</b>,<br>
-    konuş, <b>bırakınca</b> çevirir.</p>
+    <p>Üstten dili seç.<br>
+    Konuşmak için mikrofona <b>basılı tut</b>.<br>
+    Yazı çevirmek için aşağıya yaz veya yapıştır.</p>
   </div>
 </div>
 
-<footer>
+<!-- Kontroller: mikrofon (orta), yazı kutusu (alt), durum (en alt) -->
+<div class="controls">
   <button id="mic" aria-label="Mikrofon">
     <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
   </button>
+
+  <div class="writebox">
+    <textarea id="writeInput" rows="1" placeholder="Yazı yaz veya yapıştır… (uzun bas → yapıştır menüsü)"></textarea>
+    <button id="writeBtn" disabled>Çevir</button>
+  </div>
+
   <div class="status" id="status">
     <div class="state"><span class="dot"></span>Hazır</div>
-    <div class="hint">Mikrofona basılı tut ve konuş</div>
+    <div class="hint">Mikrofona basılı tut · veya yazıyı yapıştır</div>
   </div>
-</footer>
+</div>
 
 <!-- Ayar paneli -->
 <div class="overlay" id="overlay">
   <div class="panel">
     <h2>Diller</h2>
-    <p class="sub">Diğer taraf her zaman <b>Türkçe</b> olarak çalışır. Aşağıdan diyalog kurmak istediğin dilleri seç — seçtiklerin alt çubukta buton olur, çıkardıkların kaybolur.</p>
+    <p class="sub">Diğer taraf her zaman <b>Türkçe</b> olarak çalışır. Aşağıdan diyalog kurmak istediğin dilleri seç — seçtiklerin üst ızgarada buton olur, çıkardıkların kaybolur.</p>
 
     <label>Aktif diller</label>
     <div class="langlist" id="langList"></div>
@@ -277,7 +319,7 @@
   <div class="permcard">
     <div class="permicon">🎤</div>
     <h2 id="permTitle">Mikrofon izni gerekli</h2>
-    <p id="permText">Çeviri için programın mikrofonu duyması lazım. Aşağıdaki tuşa dokun, çıkan kutuda <b>"İzin ver"</b> de.</p>
+    <p id="permText">Konuşma çevirisi için programın mikrofonu duyması lazım. Aşağıdaki tuşa dokun, çıkan kutuda <b>"İzin ver"</b> de. (Sadece yazı çevirisi yapacaksan bu adımı geçebilirsin.)</p>
 
     <button class="permbtn" id="permBtn">🎤 Mikrofona İzin Ver</button>
 
@@ -296,13 +338,12 @@
       </ol>
     </div>
 
-    <button class="permskip" id="permSkip">Bunu geç (sonra mikrofon tuşuyla denerim)</button>
+    <button class="permskip" id="permSkip">Bunu geç (sadece yazı çevireceğim)</button>
   </div>
 </div>
 
 <script>
 /* ===================== DİLLER ===================== */
-/* Türkçe sabit ikinci taraf. Bu liste seçilebilir "diğer dil"leri tutar. */
 const LANGS = [
   {c:'en', n:'İngilizce',  sr:'en-US', tts:'en-US'},
   {c:'de', n:'Almanca',    sr:'de-DE', tts:'de-DE'},
@@ -339,39 +380,36 @@ function saveCfg(){ try{ localStorage.setItem('cevirmen_cfg2', JSON.stringify(cf
 const log=document.getElementById('log'), empty=document.getElementById('empty');
 const mic=document.getElementById('mic'), statusEl=document.getElementById('status');
 const gear=document.getElementById('gear'), overlay=document.getElementById('overlay');
-const langbar=document.getElementById('langbar'), langList=document.getElementById('langList');
+const langgrid=document.getElementById('langgrid'), langList=document.getElementById('langList');
 const toast=document.getElementById('toast');
 const brandSmall=document.querySelector('.brand small');
+const writeInput=document.getElementById('writeInput'), writeBtn=document.getElementById('writeBtn');
 let curTts=cfg.tts;
 
-/* ===================== DİL ÇUBUĞU ===================== */
-function renderLangBar(){
-  langbar.innerHTML='';
-  // sadece var olan ve aktif dilleri göster
-  const activeLangs = cfg.active.filter(c => L(c));
-  if(activeLangs.length===0){
+/* ===================== DİL IZGARASI ===================== */
+function renderLangGrid(){
+  langgrid.innerHTML='';
+  const active = cfg.active.filter(c => L(c));
+  if(active.length===0){
     const tip=document.createElement('div');
-    tip.style.cssText='color:var(--dim);font-family:Sometype Mono,monospace;font-size:12px;padding:6px 4px;';
+    tip.className='langempty';
     tip.textContent='Dil eklemek için ⚙ ayarlara dokun';
-    langbar.appendChild(tip);
+    langgrid.appendChild(tip);
     cfg.current=null;
     brandSmall.textContent='türkçe ⇄ ...';
     return;
   }
-  // current geçersizse ilkini seç
-  if(!activeLangs.includes(cfg.current)) cfg.current=activeLangs[0];
-  activeLangs.forEach(c=>{
+  if(!active.includes(cfg.current)) cfg.current=active[0];
+  active.forEach(c=>{
     const l=L(c);
     const btn=document.createElement('button');
     btn.className='langbtn'+(c===cfg.current?' active':'');
     btn.innerHTML='<span class="code">'+c.toUpperCase()+'</span><span class="name">'+l.n+'</span>';
     btn.onclick=()=>{
-      cfg.current=c; saveCfg(); renderLangBar();
-      brandSmall.textContent='türkçe ⇄ '+l.n.toLowerCase();
-      // dinleme açıksa yeniden başlat (yeni dile geçmek için)
+      cfg.current=c; saveCfg(); renderLangGrid();
       if(wantOn){ stopRec(); setTimeout(startRec,250); }
     };
-    langbar.appendChild(btn);
+    langgrid.appendChild(btn);
   });
   const cur=L(cfg.current);
   if(cur) brandSmall.textContent='türkçe ⇄ '+cur.n.toLowerCase();
@@ -380,7 +418,6 @@ function renderLangBar(){
 /* ===================== AYAR PANELİ ===================== */
 function renderLangList(){
   langList.innerHTML='';
-  // çalışma kopyası — kaydedince cfg.active'e aktarılır
   langList._working=[...cfg.active];
   LANGS.forEach(l=>{
     const row=document.createElement('div');
@@ -394,11 +431,7 @@ function renderLangList(){
     langList.appendChild(row);
   });
 }
-function openPanel(){
-  renderLangList();
-  setTtsUI(cfg.tts);
-  overlay.classList.add('show');
-}
+function openPanel(){ renderLangList(); setTtsUI(cfg.tts); overlay.classList.add('show'); }
 function closePanel(){ overlay.classList.remove('show'); }
 
 document.getElementById('ttsSeg').addEventListener('click',e=>{
@@ -410,10 +443,7 @@ function setTtsUI(t){
 }
 document.getElementById('saveBtn').addEventListener('click',()=>{
   cfg.active = langList._working.length ? langList._working : ['en'];
-  cfg.tts = curTts;
-  saveCfg();
-  renderLangBar();
-  closePanel();
+  cfg.tts = curTts; saveCfg(); renderLangGrid(); closePanel();
 });
 document.getElementById('cancelBtn').addEventListener('click',closePanel);
 gear.addEventListener('click',openPanel);
@@ -429,51 +459,40 @@ async function translate(text, fromCode, toCode){
   return j[0].map(s=>s[0]).join('');
 }
 
-/* ===================== DİL TESPİTİ (TR vs seçili dil) ===================== */
+/* ===================== DİL TESPİTİ ===================== */
 function detectSide(text){
   const other = L(cfg.current);
-  if(!other) return 'tr'; // güvenli varsayılan
-  const trScore = (
+  if(!other) return 'tr';
+  const otherDict={
+    en:/\b(the|and|is|you|are|hello|how|what|where|thanks|yes|no|please|good|this|that|i|my)\b/i,
+    de:/\b(und|der|die|das|ist|ich|sie|wie|hallo|danke|ja|nein|bitte|gut|nicht|was|wo)\b/i,
+    ru:/\b(и|это|как|привет|спасибо|да|нет|хорошо|что|где|вы|я)\b/i,
+    uz:/\b(va|bu|men|siz|qanday|salom|rahmat|ha|yoq|yaxshi|nima|qayerda|bir)\b/i,
+    fr:/\b(le|la|et|est|je|vous|comment|bonjour|merci|oui|non|pas|bien)\b/i,
+    es:/\b(el|la|y|es|yo|usted|cómo|hola|gracias|sí|no|bien)\b/i,
+    it:/\b(il|la|e|è|io|lei|come|ciao|grazie|sì|no|bene|per)\b/i,
+    pt:/\b(o|a|e|é|eu|você|como|olá|obrigado|sim|não|bem)\b/i,
+    nl:/\b(de|het|en|is|ik|jij|hoe|hallo|dank|ja|nee|goed)\b/i,
+    pl:/\b(i|jest|to|jak|cześć|dziękuję|tak|nie|dobrze)\b/i,
+  };
+  const trScore =
     (/[çğıöşüÇĞİÖŞÜ]/.test(text) ? 3 : 0) +
-    ((text.match(/\b(ve|bir|bu|için|ben|sen|nasıl|merhaba|teşekkür|evet|hayır|lütfen|nerede|var|yok|çok|günaydın|selam|ne|nasılsın)\b/i)||[]).length)
-  );
-  const otherScore = (
-    (other.c==='de' && /[äöüßÄÖÜ]/.test(text) ? 3 : 0) +
-    (other.c==='ru' && /[\u0400-\u04FF]/.test(text) ? 5 : 0) +
-    (other.c==='uk' && /[\u0400-\u04FF]/.test(text) ? 5 : 0) +
-    (other.c==='ar' && /[\u0600-\u06FF]/.test(text) ? 5 : 0) +
-    (other.c==='fa' && /[\u0600-\u06FF]/.test(text) ? 5 : 0) +
-    (other.c==='el' && /[\u0370-\u03FF]/.test(text) ? 5 : 0) +
-    (other.c==='ja' && /[\u3040-\u30FF\u4E00-\u9FFF]/.test(text) ? 5 : 0) +
-    (other.c==='zh' && /[\u4E00-\u9FFF]/.test(text) ? 4 : 0) +
-    (other.c==='ko' && /[\uAC00-\uD7AF]/.test(text) ? 5 : 0) +
-    (other.c==='hi' && /[\u0900-\u097F]/.test(text) ? 5 : 0) +
-    ({
-      en:/\b(the|and|is|you|are|hello|how|what|where|thanks|yes|no|please|good|this|that|i|my)\b/i,
-      de:/\b(und|der|die|das|ist|ich|sie|wie|hallo|danke|ja|nein|bitte|gut|nicht|was|wo)\b/i,
-      ru:/\b(и|это|как|привет|спасибо|да|нет|хорошо|что|где|вы|я)\b/i,
-      uz:/\b(va|bu|men|siz|qanday|salom|rahmat|ha|yoq|yaxshi|nima|qayerda|bir)\b/i,
-      fr:/\b(le|la|et|est|je|vous|comment|bonjour|merci|oui|non|pas|bien)\b/i,
-      es:/\b(el|la|y|es|yo|usted|cómo|hola|gracias|sí|no|bien)\b/i,
-      it:/\b(il|la|e|è|io|lei|come|ciao|grazie|sì|no|bene|per)\b/i,
-      pt:/\b(o|a|e|é|eu|você|como|olá|obrigado|sim|não|bem)\b/i,
-      nl:/\b(de|het|en|is|ik|jij|hoe|hallo|dank|ja|nee|goed)\b/i,
-      pl:/\b(i|jest|to|jak|cześć|dziękuję|tak|nie|dobrze)\b/i,
-    }[other.c] ? ((text.match({
-      en:/\b(the|and|is|you|are|hello|how|what|where|thanks|yes|no|please|good|this|that|i|my)\b/i,
-      de:/\b(und|der|die|das|ist|ich|sie|wie|hallo|danke|ja|nein|bitte|gut|nicht|was|wo)\b/i,
-      ru:/\b(и|это|как|привет|спасибо|да|нет|хорошо|что|где|вы|я)\b/i,
-      uz:/\b(va|bu|men|siz|qanday|salom|rahmat|ha|yoq|yaxshi|nima|qayerda|bir)\b/i,
-      fr:/\b(le|la|et|est|je|vous|comment|bonjour|merci|oui|non|pas|bien)\b/i,
-      es:/\b(el|la|y|es|yo|usted|cómo|hola|gracias|sí|no|bien)\b/i,
-      it:/\b(il|la|e|è|io|lei|come|ciao|grazie|sì|no|bene|per)\b/i,
-      pt:/\b(o|a|e|é|eu|você|como|olá|obrigado|sim|não|bem)\b/i,
-      nl:/\b(de|het|en|is|ik|jij|hoe|hallo|dank|ja|nee|goed)\b/i,
-      pl:/\b(i|jest|to|jak|cześć|dziękuję|tak|nie|dobrze)\b/i,
-    }[other.c])||[]).length) : 0)
-  );
-  if(trScore>otherScore) return 'tr';
-  if(otherScore>trScore) return 'other';
+    ((text.match(/\b(ve|bir|bu|için|ben|sen|nasıl|merhaba|teşekkür|evet|hayır|lütfen|nerede|var|yok|çok|günaydın|selam|ne|nasılsın)\b/i)||[]).length);
+  let oScore = 0;
+  if(other.c==='de' && /[äöüßÄÖÜ]/.test(text)) oScore+=3;
+  if(other.c==='ru' && /[\u0400-\u04FF]/.test(text)) oScore+=5;
+  if(other.c==='uk' && /[\u0400-\u04FF]/.test(text)) oScore+=5;
+  if(other.c==='ar' && /[\u0600-\u06FF]/.test(text)) oScore+=5;
+  if(other.c==='fa' && /[\u0600-\u06FF]/.test(text)) oScore+=5;
+  if(other.c==='el' && /[\u0370-\u03FF]/.test(text)) oScore+=5;
+  if(other.c==='ja' && /[\u3040-\u30FF\u4E00-\u9FFF]/.test(text)) oScore+=5;
+  if(other.c==='zh' && /[\u4E00-\u9FFF]/.test(text)) oScore+=4;
+  if(other.c==='ko' && /[\uAC00-\uD7AF]/.test(text)) oScore+=5;
+  if(other.c==='hi' && /[\u0900-\u097F]/.test(text)) oScore+=5;
+  if(otherDict[other.c]) oScore += (text.match(otherDict[other.c])||[]).length;
+
+  if(trScore>oScore) return 'tr';
+  if(oScore>trScore) return 'other';
   return 'tr';
 }
 
@@ -534,7 +553,7 @@ async function handleFinal(text){
   const other = L(cfg.current);
   if(!other){ showError('Önce ayarlardan bir dil ekle.'); return; }
   clearEmpty();
-  const side=detectSide(text); // 'tr' veya 'other'
+  const side=detectSide(text);
   const from = side==='tr' ? TR : other;
   const to   = side==='tr' ? other : TR;
   const cls  = side==='tr' ? 'B' : 'A';
@@ -587,24 +606,14 @@ function showInterim(text){
 }
 function clearInterim(){ if(curBubble){ curBubble.remove(); curBubble=null; } }
 
-/* ===================== KONUŞMA TANIMA — TEK DOKUN MANTIĞI ===================== */
+/* ===================== KONUŞMA TANIMA — BASILI TUT MODU ===================== */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null, wantOn=false;
-let collected=''; // dinleme süresince biriken final metin
 
 function makeRec(){
   const r=new SR();
-  /* BASILI-TUT MODU:
-     - continuous KAPALI: tarayıcı tek sonuç döner, tekrar hatası olmaz
-     - interimResults AÇIK: konuşurken yazı canlı görünür
-     - Sonucu r.stop() çağırınca toparlar ve onend tetiklenir
-  */
-  r.continuous=false;
-  r.interimResults=true;
-  r.lang=TR.sr;
-
-  let finalText=''; // tek sonuç burada birikir
-
+  r.continuous=false; r.interimResults=true; r.lang=TR.sr;
+  let finalText='';
   r.onstart=()=>{
     finalText='';
     mic.classList.add('on');
@@ -631,8 +640,6 @@ function makeRec(){
       showPerm();
     } else if(e.error==='network'){
       showError('Ağ hatası — konuşma tanıma için internet gerekli.');
-    } else if(e.error==='no-speech' || e.error==='aborted'){
-      /* sessizlik / parmak çekildi — onend halleder */
     }
   };
   r.onend=()=>{
@@ -644,10 +651,10 @@ function makeRec(){
     if(text){
       setStatus('Çevriliyor…','',false);
       handleFinal(text).finally(()=>{
-        setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
+        setStatus('Hazır','Mikrofona basılı tut · veya yazıyı yapıştır',false);
       });
     }else{
-      setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
+      setStatus('Hazır','Mikrofona basılı tut · veya yazıyı yapıştır',false);
     }
   };
   return r;
@@ -655,7 +662,7 @@ function makeRec(){
 function startRec(){
   if(!SR){ showError('Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome kullan.'); return; }
   if(!L(cfg.current)){ showError('Önce ayarlardan bir dil ekle.'); return; }
-  if(wantOn) return; // zaten dinliyor
+  if(wantOn) return;
   wantOn=true;
   rec=makeRec();
   try{ rec.start(); }catch(e){ wantOn=false; }
@@ -666,29 +673,44 @@ function stopRec(){
   if(rec){ try{ rec.stop(); }catch(e){} }
 }
 
-/* ====== BASILI-TUT KONTROL ======
-   - touchstart / mousedown: dinlemeye başla
-   - touchend / mouseup / mouseleave: durdur, çevir
-*/
-function onPress(e){
-  if(e && e.cancelable) e.preventDefault();
-  startRec();
-}
-function onRelease(e){
-  if(e && e.cancelable) e.preventDefault();
-  stopRec();
-}
-
-/* dokunmatik (telefon) — passive false, çünkü preventDefault çağırıyoruz */
+/* BASILI-TUT */
+function onPress(e){ if(e&&e.cancelable) e.preventDefault(); startRec(); }
+function onRelease(e){ if(e&&e.cancelable) e.preventDefault(); stopRec(); }
 mic.addEventListener('touchstart', onPress,   {passive:false});
 mic.addEventListener('touchend',   onRelease, {passive:false});
 mic.addEventListener('touchcancel',onRelease, {passive:false});
-/* fare (PC test için) */
 mic.addEventListener('mousedown',  onPress);
 mic.addEventListener('mouseup',    onRelease);
 mic.addEventListener('mouseleave', onRelease);
-/* tıklama davranışını engelle (touchstart sonrası 300ms tıklama gelmesin) */
 mic.addEventListener('click', e=>e.preventDefault());
+
+/* ===================== YAZI ÇEVİRİSİ ===================== */
+function autoSizeTextarea(){
+  writeInput.style.height='auto';
+  writeInput.style.height = Math.min(writeInput.scrollHeight, 120) + 'px';
+}
+writeInput.addEventListener('input',()=>{
+  autoSizeTextarea();
+  writeBtn.disabled = !writeInput.value.trim();
+});
+/* Enter ile gönder (Shift+Enter satır atlar) */
+writeInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    submitWritten();
+  }
+});
+async function submitWritten(){
+  const text = writeInput.value.trim();
+  if(!text) return;
+  writeInput.value='';
+  autoSizeTextarea();
+  writeBtn.disabled=true;
+  setStatus('Çevriliyor…','',false);
+  await handleFinal(text);
+  setStatus('Hazır','Mikrofona basılı tut · veya yazıyı yapıştır',false);
+}
+writeBtn.addEventListener('click',submitWritten);
 
 /* ===================== MİKROFON İZNİ ===================== */
 const permWrap=document.getElementById('permWrap');
@@ -716,7 +738,7 @@ async function requestMic(){
     permBtn.disabled=false;
     permBtn.textContent='🎤 Mikrofona İzin Ver';
     hidePerm();
-    setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
+    setStatus('Hazır','Mikrofona basılı tut · veya yazıyı yapıştır',false);
   }catch(e){
     permBtn.disabled=false;
     permBtn.textContent='🎤 Tekrar Dene';
@@ -728,13 +750,13 @@ async function requestMic(){
 permBtn.addEventListener('click',requestMic);
 permSkip.addEventListener('click',()=>{
   hidePerm();
-  setStatus('Mikrofon kapalı','Mikrofon tuşuna dokunup izin ver',false);
+  setStatus('Sadece yazı modu','Aşağıdaki kutuya yaz veya yapıştır',false);
 });
 
 /* ===================== AÇILIŞ ===================== */
-renderLangBar();
+renderLangGrid();
 window.addEventListener('load', async ()=>{
-  setStatus('Hazır','Mikrofona basılı tut ve konuş',false);
+  setStatus('Hazır','Mikrofona basılı tut · veya yazıyı yapıştır',false);
   const state=await checkPermission();
   if(state==='granted') hidePerm();
   else showPerm();
