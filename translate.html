@@ -39,6 +39,7 @@
     display:flex; align-items:center; justify-content:center; font-size:16px;
   }
   .gear:active{ transform:scale(.92); }
+  .headbtns{ display:flex; gap:8px; }
 
   /* Dil ızgarası: 2 sütun, satırlar aşağı uzar */
   .langgrid{
@@ -169,6 +170,11 @@
   .panel h2{ font-size:21px; font-weight:900; margin-bottom:6px; }
   .panel .sub{ color:var(--dim); font-size:13.5px; line-height:1.55; margin-bottom:18px; }
   .panel label{ display:block; font-family:'Sometype Mono',monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); margin:18px 0 9px; }
+  .panel input[type="text"]{
+    width:100%; padding:13px 14px; background:#0c0a09; border:1px solid var(--line);
+    border-radius:10px; color:var(--txt); font-family:'Sometype Mono',monospace; font-size:14px;
+  }
+  .panel input[type="text"]:focus{ outline:none; border-color:var(--a); }
 
   .langlist{ display:flex; flex-direction:column; gap:7px; }
   .langrow{
@@ -255,7 +261,11 @@
 
 <header>
   <div class="brand">Çevirmen<small>türkçe ⇄ ...</small></div>
-  <button class="gear" id="gear" title="Ayarlar">⚙</button>
+  <div class="headbtns">
+    <button class="gear" id="saveLogBtn" title="Sohbeti kaydet">📥</button>
+    <button class="gear" id="clearBtn" title="Sohbeti temizle">🗑️</button>
+    <button class="gear" id="gear" title="Ayarlar">⚙</button>
+  </div>
 </header>
 
 <!-- Dil ızgarası (2 sütun, satırlar aşağı uzar) -->
@@ -303,6 +313,12 @@
       <button data-tts="off">Kapalı</button>
     </div>
 
+    <label>Orijinal metni göster</label>
+    <div class="seg" id="origSeg">
+      <button data-orig="on">Açık</button>
+      <button data-orig="off" class="active">Kapalı</button>
+    </div>
+
     <p class="note">Çeviri motoru ücretsizdir, API anahtarı gerekmez. İnternet bağlantısı gereklidir.</p>
 
     <div class="row">
@@ -313,6 +329,21 @@
 </div>
 
 <div class="toast" id="toast">Kopyalandı ✓</div>
+
+<!-- Kaydet dialog -->
+<div class="overlay" id="saveOverlay">
+  <div class="panel">
+    <h2>Sohbeti Kaydet</h2>
+    <p class="sub">Sohbet bir <b>.txt</b> dosyası olarak kaydedilir. Dosya adını yaz, sonra <b>İndir</b> veya <b>Paylaş</b>'a dokun.</p>
+    <label>Dosya adı</label>
+    <input id="saveName" type="text" placeholder="örn: almanya-marketteki-konuşma" autocomplete="off" spellcheck="false">
+    <div class="row">
+      <button class="btn btn-ghost" id="saveCancelBtn">Vazgeç</button>
+      <button class="btn btn-ghost" id="saveDownloadBtn">📥 İndir</button>
+      <button class="btn btn-primary" id="saveShareBtn">📤 Paylaş</button>
+    </div>
+  </div>
+</div>
 
 <!-- Mikrofon izin ekranı -->
 <div class="permwrap" id="permWrap">
@@ -368,7 +399,7 @@ const TR = {c:'tr', n:'Türkçe', sr:'tr-TR', tts:'tr-TR'};
 const L = c => LANGS.find(x=>x.c===c);
 
 /* ===================== AYARLAR ===================== */
-const DEF = { active:['en','de','ru','uz'], current:'en', tts:'on' };
+const DEF = { active:['en','de','ru','uz'], current:'en', tts:'on', showOrig:'off' };
 let cfg = loadCfg();
 function loadCfg(){
   try{ return {...DEF, ...JSON.parse(localStorage.getItem('cevirmen_cfg2')||'{}')}; }
@@ -384,7 +415,7 @@ const langgrid=document.getElementById('langgrid'), langList=document.getElement
 const toast=document.getElementById('toast');
 const brandSmall=document.querySelector('.brand small');
 const writeInput=document.getElementById('writeInput'), writeBtn=document.getElementById('writeBtn');
-let curTts=cfg.tts;
+let curTts=cfg.tts, curOrig=cfg.showOrig;
 
 /* ===================== DİL IZGARASI ===================== */
 function renderLangGrid(){
@@ -431,19 +462,27 @@ function renderLangList(){
     langList.appendChild(row);
   });
 }
-function openPanel(){ renderLangList(); setTtsUI(cfg.tts); overlay.classList.add('show'); }
+function openPanel(){ renderLangList(); setTtsUI(cfg.tts); setOrigUI(cfg.showOrig); overlay.classList.add('show'); }
 function closePanel(){ overlay.classList.remove('show'); }
 
 document.getElementById('ttsSeg').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b)return; setTtsUI(b.dataset.tts);
 });
+document.getElementById('origSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return; setOrigUI(b.dataset.orig);
+});
 function setTtsUI(t){
   curTts=t;
   document.querySelectorAll('#ttsSeg button').forEach(x=>x.classList.toggle('active',x.dataset.tts===t));
 }
+function setOrigUI(o){
+  curOrig=o;
+  document.querySelectorAll('#origSeg button').forEach(x=>x.classList.toggle('active',x.dataset.orig===o));
+}
 document.getElementById('saveBtn').addEventListener('click',()=>{
   cfg.active = langList._working.length ? langList._working : ['en'];
-  cfg.tts = curTts; saveCfg(); renderLangGrid(); closePanel();
+  cfg.tts = curTts; cfg.showOrig = curOrig;
+  saveCfg(); renderLangGrid(); applyShowOrig(); closePanel();
 });
 document.getElementById('cancelBtn').addEventListener('click',closePanel);
 gear.addEventListener('click',openPanel);
@@ -532,7 +571,10 @@ async function copyText(text, viaShare){
 }
 
 /* ===================== BALONCUKLAR ===================== */
-function clearEmpty(){ if(empty) empty.style.display='none'; }
+function clearEmpty(){
+  const e=document.getElementById('empty');
+  if(e) e.style.display='none';
+}
 function setStatus(state,hint,on){
   statusEl.className='status'+(on?' on':'');
   statusEl.innerHTML='<div class="state"><span class="dot"></span>'+state+'</div><div class="hint">'+hint+'</div>';
@@ -548,6 +590,19 @@ const ICON_SHARE='<svg viewBox="0 0 24 24"><path d="M18 16a3 3 0 0 0-2.4 1.2L9 1
 const ICON_COPY='<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
 const ICON_SPK='<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>';
 
+/* Sohbet geçmişi — kaydetme için tutulur */
+const history = [];
+
+function applyShowOrig(){
+  // tüm baloncuklarda kaynak (src + arr) görünürlüğünü güncelle
+  const hide = curOrig !== 'on';
+  document.querySelectorAll('#log .bubble').forEach(b=>{
+    const s=b.querySelector('.src'), a=b.querySelector('.arr');
+    if(s) s.style.display = hide ? 'none' : '';
+    if(a) a.style.display = hide ? 'none' : '';
+  });
+}
+
 async function handleFinal(text){
   text=text.trim(); if(!text) return;
   const other = L(cfg.current);
@@ -557,13 +612,14 @@ async function handleFinal(text){
   const from = side==='tr' ? TR : other;
   const to   = side==='tr' ? other : TR;
   const cls  = side==='tr' ? 'B' : 'A';
+  const hideOrig = curOrig !== 'on';
 
   const b=document.createElement('div');
   b.className='bubble '+cls;
   b.innerHTML=
     '<div class="tag">'+from.n+' → '+to.n+'</div>'+
-    '<div class="src"></div>'+
-    '<div class="arr"></div>'+
+    '<div class="src"'+(hideOrig?' style="display:none"':'')+'></div>'+
+    '<div class="arr"'+(hideOrig?' style="display:none"':'')+'></div>'+
     '<div class="out">…</div>'+
     '<div class="acts" style="display:none">'+
       '<button class="act sh">'+ICON_SHARE+'Paylaş</button>'+
@@ -586,6 +642,8 @@ async function handleFinal(text){
       setTimeout(()=>btn.classList.remove('done'),1500);
     };
     acts.querySelector('.sp').onclick=()=>speak(tr, to.tts);
+    // history'ye ekle (başarılıysa)
+    history.push({ time:new Date(), from:from.n, to:to.n, src:text, out:tr });
   }catch(e){
     b.querySelector('.out').textContent='⚠ '+(e.message||'çeviri başarısız — interneti kontrol et');
   }
@@ -751,6 +809,104 @@ permBtn.addEventListener('click',requestMic);
 permSkip.addEventListener('click',()=>{
   hidePerm();
   setStatus('Sadece yazı modu','Aşağıdaki kutuya yaz veya yapıştır',false);
+});
+
+/* ===================== TEMİZLE ===================== */
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  if(history.length===0 && !document.querySelector('#log .bubble')){
+    return; // zaten boş
+  }
+  if(confirm('Tüm sohbeti silmek istiyor musun?')){
+    history.length=0;
+    log.innerHTML='';
+    // empty ekranını geri getir
+    const e=document.createElement('div');
+    e.className='empty'; e.id='empty';
+    e.innerHTML='<div class="big">🎙️</div><p>Üstten dili seç. Sesli: mikrofona <b>basılı tut</b>, konuş, bırak.<br>Yazılı: alttaki kutuya yapıştır veya yaz, <b>Çevir</b>\'e bas.</p>';
+    log.appendChild(e);
+    // empty referansını yenile
+    window.empty = e;
+  }
+});
+
+/* ===================== KAYDET / PAYLAŞ ===================== */
+const saveOverlay=document.getElementById('saveOverlay');
+const saveName=document.getElementById('saveName');
+
+function buildLogText(){
+  if(history.length===0) return '';
+  const d=new Date();
+  const dt = d.toLocaleDateString('tr-TR')+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  let out = 'ÇEVİRMEN — Sohbet Geçmişi\n'+dt+'\n'+'='.repeat(40)+'\n\n';
+  history.forEach(h=>{
+    out += '['+h.from+' → '+h.to+']\n';
+    out += h.src + '\n';
+    out += '→ ' + h.out + '\n\n';
+  });
+  return out.trim()+'\n';
+}
+function safeFilename(name){
+  name = (name||'').trim();
+  if(!name){
+    const d=new Date();
+    name = 'cevirmen-' + d.toISOString().slice(0,16).replace(/[:T]/g,'-');
+  }
+  // güvensiz karakterleri temizle
+  name = name.replace(/[\/\\:*?"<>|]/g,'').slice(0,80);
+  if(!name.toLowerCase().endsWith('.txt')) name += '.txt';
+  return name;
+}
+
+document.getElementById('saveLogBtn').addEventListener('click',()=>{
+  if(history.length===0){
+    showToast('Henüz çeviri yok');
+    return;
+  }
+  saveName.value='';
+  saveOverlay.classList.add('show');
+  setTimeout(()=>saveName.focus(),100);
+});
+document.getElementById('saveCancelBtn').addEventListener('click',()=>saveOverlay.classList.remove('show'));
+saveOverlay.addEventListener('click',e=>{ if(e.target===saveOverlay) saveOverlay.classList.remove('show'); });
+
+document.getElementById('saveDownloadBtn').addEventListener('click',()=>{
+  const txt=buildLogText();
+  const filename=safeFilename(saveName.value);
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  saveOverlay.classList.remove('show');
+  showToast('İndirildi: '+filename);
+});
+
+document.getElementById('saveShareBtn').addEventListener('click',async ()=>{
+  const txt=buildLogText();
+  const filename=safeFilename(saveName.value);
+  // Önce dosya paylaşımını dene (WhatsApp/Telegram dosya olarak alır)
+  if(navigator.canShare){
+    try{
+      const file=new File([txt], filename, {type:'text/plain'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:filename});
+        saveOverlay.classList.remove('show');
+        return;
+      }
+    }catch(e){ if(e.name==='AbortError'){ saveOverlay.classList.remove('show'); return; } }
+  }
+  // Dosya paylaşımı yoksa metin olarak paylaş
+  if(navigator.share){
+    try{
+      await navigator.share({title:filename, text:txt});
+      saveOverlay.classList.remove('show');
+      return;
+    }catch(e){ if(e.name==='AbortError'){ saveOverlay.classList.remove('show'); return; } }
+  }
+  // Hiçbiri yoksa kopyala
+  await copyText(txt);
+  saveOverlay.classList.remove('show');
 });
 
 /* ===================== AÇILIŞ ===================== */
